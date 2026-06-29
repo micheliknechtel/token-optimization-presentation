@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Token Optimization for Developers — GitHub Copilot</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff;
+            color: #24292f;
+            line-height: 1.5;
+        }
+        .slide {
+            width: 100%;
+            min-height: 100vh;
+            padding: 60px 80px;
+            page-break-after: always;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+        }
+        .slide:last-child {
+            page-break-after: avoid;
+        }
+        .slide-title {
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            color: #fff;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .slide-title h1 {
+            font-size: 52px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .slide-title .subtitle {
+            font-size: 24px;
+            color: #8b949e;
+            margin-bottom: 10px;
+        }
+        .slide-title .meta {
+            font-size: 18px;
+            color: #58a6ff;
+            margin-top: 30px;
+        }
+        h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #0d1117;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #58a6ff;
+        }
+        h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #24292f;
+            margin: 25px 0 15px;
+        }
+        h4 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0969da;
+            margin: 20px 0 10px;
+        }
+        p, li {
+            font-size: 18px;
+            line-height: 1.7;
+            color: #24292f;
+        }
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+        th {
+            background: #0d1117;
+            color: #fff;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #d0d7de;
+        }
+        tr:nth-child(even) {
+            background: #f6f8fa;
+        }
+        .highlight-box {
+            background: #ddf4ff;
+            border-left: 4px solid #0969da;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+        .warning-box {
+            background: #fff8c5;
+            border-left: 4px solid #d4a72c;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+        .success-box {
+            background: #dcffe4;
+            border-left: 4px solid #1a7f37;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+        .danger-box {
+            background: #ffebe9;
+            border-left: 4px solid #cf222e;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        .col {
+            padding: 20px;
+            background: #f6f8fa;
+            border-radius: 8px;
+        }
+        .col h4 {
+            margin-top: 0;
+        }
+        code {
+            background: #f6f8fa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', monospace;
+            font-size: 15px;
+            color: #cf222e;
+        }
+        .formula {
+            background: #f6f8fa;
+            border: 1px solid #d0d7de;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'SF Mono', monospace;
+            font-size: 16px;
+            line-height: 2;
+            margin: 20px 0;
+        }
+        .badge-free {
+            display: inline-block;
+            background: #1a7f37;
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .badge-paid {
+            display: inline-block;
+            background: #cf222e;
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .slide-number {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            font-size: 14px;
+            color: #8b949e;
+        }
+        .logo-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            font-size: 14px;
+            color: #8b949e;
+        }
+        .emoji {
+            font-size: 24px;
+        }
+        .big-number {
+            font-size: 72px;
+            font-weight: 700;
+            color: #0969da;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .vs {
+            font-size: 24px;
+            font-weight: 700;
+            color: #8b949e;
+        }
+        @media print {
+            .slide {
+                height: 100vh;
+                overflow: hidden;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide slide-title">
+    <h1>🎯 Token Optimization for Developers</h1>
+    <p class="subtitle">Get More from GitHub Copilot, Spend Less</p>
+    <p class="meta">Amadeus — Developer Training Session</p>
+    <p class="meta" style="color: #8b949e; font-size: 16px; margin-top: 15px;">Duration: 60 minutes | June 2026</p>
+</div>
+
+<!-- SLIDE 2: Agenda -->
+<div class="slide">
+    <h2>📋 Agenda</h2>
+    <table>
+        <tr><th>#</th><th>Section</th><th>Duration</th></tr>
+        <tr><td>1</td><td>How tokens become credits</td><td>2 min</td></tr>
+        <tr><td>2</td><td>Free vs. paid</td><td>2 min</td></tr>
+        <tr><td>3</td><td>Model selection — your biggest lever</td><td>5 min</td></tr>
+        <tr><td>4</td><td>🖥️ Live demo — model selection in action</td><td>10 min</td></tr>
+        <tr><td>5</td><td>Prompting techniques that save tokens</td><td>8 min</td></tr>
+        <tr><td>6</td><td>🏋️ Hands-on exercise — prompts side by side</td><td>10 min</td></tr>
+        <tr><td>7</td><td>Context management</td><td>5 min</td></tr>
+        <tr><td>8</td><td>Agent mode — deep dive & best practices</td><td>10 min</td></tr>
+        <tr><td>9</td><td>Cheat sheet & takeaways</td><td>3 min</td></tr>
+        <tr><td>10</td><td>Q&A</td><td>5 min</td></tr>
+    </table>
+    <div class="highlight-box">
+        <strong>Goal:</strong> Learn practical habits that reduce your AI credit consumption by 50-80% without reducing productivity.
+    </div>
+    <span class="slide-number">2</span>
+</div>
+
+<!-- SLIDE 3: How Tokens Become Credits -->
+<div class="slide">
+    <h2>1️⃣ How Your Usage Translates to Cost</h2>
+    <p style="font-size: 20px; margin-bottom: 25px;">Every time you use Copilot Chat, Agent mode, or CLI, three things happen:</p>
+    
+    <div class="two-col">
+        <div class="col">
+            <h4>Token Types</h4>
+            <ul>
+                <li><strong>Input tokens</strong> — your prompt + file context sent to the model</li>
+                <li><strong>Output tokens</strong> — the response generated <em>(most expensive)</em></li>
+                <li><strong>Cached tokens</strong> — context reused from earlier <em>(90% cheaper)</em></li>
+            </ul>
+        </div>
+        <div class="col">
+            <h4>Think of it like a phone call</h4>
+            <ul>
+                <li>📞 Input = how long <strong>you</strong> talk</li>
+                <li>📞 Output = how long the <strong>other person</strong> talks (costs more)</li>
+                <li>📞 Cached = "as I mentioned earlier..." (almost free)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="formula">
+        (Input tokens × input price) + (Output tokens × output price) + (Cached tokens × cached price) = <strong>AI credits consumed</strong><br><br>
+        1 AI credit = $0.01 USD
+    </div>
+
+    <div class="highlight-box">
+        <strong>Your goal:</strong> Get the answer you need with fewer tokens IN and fewer tokens OUT.
+    </div>
+    <span class="slide-number">3</span>
+</div>
+
+<!-- SLIDE 4: Free vs Paid -->
+<div class="slide">
+    <h2>2️⃣ What's Free vs. What Costs Credits</h2>
+    
+    <table>
+        <tr><th>Feature</th><th>Cost</th><th>Notes</th></tr>
+        <tr><td><strong>Inline code completions (Tab to accept)</strong></td><td><span class="badge-free">🆓 FREE</span></td><td>Unlimited — use as much as you want</td></tr>
+        <tr><td><strong>Next edit suggestions</strong></td><td><span class="badge-free">🆓 FREE</span></td><td>Unlimited — always free</td></tr>
+        <tr><td>Copilot Chat</td><td><span class="badge-paid">💰 Credits</span></td><td>Cost depends on model + tokens</td></tr>
+        <tr><td>Agent mode</td><td><span class="badge-paid">💰💰 More</span></td><td>Multiple model calls per task</td></tr>
+        <tr><td>Copilot CLI</td><td><span class="badge-paid">💰 Credits</span></td><td>Command-line interactions</td></tr>
+        <tr><td>PR summaries / Code review</td><td><span class="badge-paid">💰 Credits</span></td><td>Automated review costs</td></tr>
+    </table>
+
+    <div class="success-box">
+        <strong>💡 Tip #1:</strong> If Tab completion can do the job, don't open Chat. You save 100% of the credits.
+    </div>
+
+    <p style="font-size: 20px; margin-top: 20px; text-align: center;"><strong>Code completions handle ~60% of daily coding tasks — and they're completely free.</strong></p>
+    <span class="slide-number">4</span>
+</div>
+
+<!-- SLIDE 5: Model Selection -->
+<div class="slide">
+    <h2>3️⃣ Model Selection — Your Biggest Lever</h2>
+    <p style="margin-bottom: 20px;">You can pick which model Copilot uses. The cost difference is <strong>massive</strong>:</p>
+    
+    <table>
+        <tr><th>Model</th><th>Category</th><th>Best for</th><th>Relative Cost</th></tr>
+        <tr><td>GPT-5.4 nano</td><td>Lightweight</td><td>Quick questions, simple code</td><td>🟢 1x (baseline)</td></tr>
+        <tr><td>GPT-5 mini</td><td>Lightweight</td><td>General coding tasks</td><td>🟢 1.6x</td></tr>
+        <tr><td>Gemini 3 Flash</td><td>Lightweight</td><td>Fast responses, boilerplate</td><td>🟡 2.4x</td></tr>
+        <tr><td>Claude Haiku 4.5</td><td>Versatile</td><td>Balanced quality/cost</td><td>🟡 4x</td></tr>
+        <tr><td>Claude Sonnet 4.x</td><td>Versatile</td><td>Complex reasoning</td><td>🟠 12x</td></tr>
+        <tr><td>GPT-5.5</td><td>Powerful</td><td>Hard problems, architecture</td><td>🔴 24x</td></tr>
+        <tr><td>Claude Opus 4.x</td><td>Powerful</td><td>Maximum quality</td><td>🔴 20x</td></tr>
+    </table>
+
+    <div class="warning-box">
+        <strong>Same simple task on nano vs. Opus = 20x cost difference with similar answer quality.</strong>
+    </div>
+    <span class="slide-number">5</span>
+</div>
+
+<!-- SLIDE 6: Model Selection Rules -->
+<div class="slide">
+    <h2>3️⃣ Model Selection — Rules of Thumb</h2>
+    
+    <div class="two-col">
+        <div class="col" style="background: #dcffe4;">
+            <h4>🟢 Use Lightweight (nano, mini, Flash)</h4>
+            <ul>
+                <li>"Explain this function"</li>
+                <li>"Write a unit test for this"</li>
+                <li>"Fix this typo / syntax error"</li>
+                <li>"Generate boilerplate code"</li>
+                <li>"What does this regex do?"</li>
+                <li>"Add a null check here"</li>
+            </ul>
+            <p style="margin-top: 15px;"><strong>~80% of daily tasks</strong></p>
+        </div>
+        <div class="col" style="background: #ffebe9;">
+            <h4>🔴 Use Powerful (Opus, GPT-5.5) — rarely</h4>
+            <ul>
+                <li>Complex architecture decisions</li>
+                <li>Multi-file refactoring with tricky logic</li>
+                <li>Debugging concurrency / race conditions</li>
+                <li>Novel algorithm design</li>
+                <li>Security vulnerability analysis</li>
+            </ul>
+            <p style="margin-top: 15px;"><strong>~5% of daily tasks</strong></p>
+        </div>
+    </div>
+
+    <div class="highlight-box">
+        <strong>💡 Tip #2:</strong> Start with a lightweight model. Only upgrade if the answer isn't good enough. You can always escalate — you can't un-spend credits.
+    </div>
+    <span class="slide-number">6</span>
+</div>
+
+<!-- SLIDE 7: Live Demo -->
+<div class="slide">
+    <h2>4️⃣ 🖥️ Live Demo — Model Selection in Action</h2>
+    
+    <h3>Part 1: How to switch models (2 min)</h3>
+    <ul>
+        <li>Open Copilot Chat panel in VS Code</li>
+        <li>Click the model name at the top → model picker dropdown appears</li>
+        <li>Show categories: Lightweight / Versatile / Powerful</li>
+        <li>Switch to GPT-5.4 nano</li>
+    </ul>
+
+    <h3>Part 2: Same task, different models (5 min)</h3>
+    <p><strong>Task:</strong> <em>"Write a function that checks if a string is a valid UUID"</em></p>
+    <table>
+        <tr><th>Model</th><th>Expected result</th><th>Approximate cost</th></tr>
+        <tr><td>GPT-5.4 nano</td><td>✅ Correct, concise</td><td>~0.05 credits</td></tr>
+        <tr><td>Claude Sonnet 4.5</td><td>✅ Correct, more verbose</td><td>~0.6 credits</td></tr>
+        <tr><td>Claude Opus 4.7</td><td>✅ Correct, possibly over-engineered</td><td>~1.0 credit</td></tr>
+    </table>
+
+    <h3>Part 3: The math (3 min)</h3>
+    <div class="formula">
+        50 questions/day × nano  = ~2.5 credits/day  = ~50 credits/month<br>
+        50 questions/day × Opus  = ~50 credits/day   = ~1,000 credits/month<br><br>
+        <strong>Same productivity. 20x cost difference.</strong>
+    </div>
+    <span class="slide-number">7</span>
+</div>
+
+<!-- SLIDE 8: Prompting - Be Specific -->
+<div class="slide">
+    <h2>5️⃣ Prompting Techniques That Save Tokens</h2>
+    
+    <h3>A. Be specific (reduces output tokens by 50-80%)</h3>
+    
+    <div class="two-col">
+        <div class="col" style="background: #ffebe9;">
+            <h4>❌ Vague prompt</h4>
+            <p><em>"Write me a date utility"</em></p>
+            <p style="margin-top: 10px;">→ Model generates 200 lines you don't need</p>
+            <p style="margin-top: 10px;">→ High output tokens</p>
+        </div>
+        <div class="col" style="background: #dcffe4;">
+            <h4>✅ Specific prompt</h4>
+            <p><em>"Write a function <code>formatDate(iso: string): string</code> that returns DD/MM/YYYY format"</em></p>
+            <p style="margin-top: 10px;">→ Model generates exactly what you need</p>
+            <p style="margin-top: 10px;">→ 80% fewer output tokens</p>
+        </div>
+    </div>
+
+    <h3>B. Ask for what you need, not everything</h3>
+    <div class="two-col">
+        <div class="col" style="background: #ffebe9;">
+            <h4>❌</h4>
+            <p><em>"Explain this entire file"</em></p>
+        </div>
+        <div class="col" style="background: #dcffe4;">
+            <h4>✅</h4>
+            <p><em>"Explain what the <code>processPayment</code> function on line 45 does"</em></p>
+        </div>
+    </div>
+    <p style="text-align: center; font-size: 20px; margin-top: 15px;"><strong>Savings: 70-90% fewer output tokens</strong></p>
+    <span class="slide-number">8</span>
+</div>
+
+<!-- SLIDE 9: Prompting - Constraints -->
+<div class="slide">
+    <h2>5️⃣ Prompting Techniques (continued)</h2>
+    
+    <h3>C. Use constraints</h3>
+    <div class="success-box">
+        ✅ <em>"Fix this bug. Only show me the changed lines."</em><br>
+        ✅ <em>"Answer in 3 bullet points max."</em><br>
+        ✅ <em>"No explanations, just the code."</em>
+    </div>
+    <p>Less output = fewer tokens = less cost.</p>
+
+    <h3>D. Don't repeat yourself</h3>
+    <div class="two-col">
+        <div class="col" style="background: #ffebe9;">
+            <h4>❌</h4>
+            <p>Pasting the same code block in every message</p>
+        </div>
+        <div class="col" style="background: #dcffe4;">
+            <h4>✅</h4>
+            <p>Reference once, then say <em>"In the function I shared above..."</em></p>
+            <p style="margin-top: 8px;">Cached = 90% cheaper than re-sending</p>
+        </div>
+    </div>
+
+    <h3>E. Break complex tasks into steps</h3>
+    <div class="danger-box">
+        ❌ <em>"Build me a complete REST API with auth, validation, error handling, tests, and docs"</em><br>
+        → Model generates 500+ lines, half wrong, you regenerate = 2x cost
+    </div>
+    <div class="success-box">
+        ✅ Step by step: 1) Route handler → 2) Validation → 3) Error handling → 4) Test<br>
+        → Each step is correct. No wasted regenerations.
+    </div>
+    <span class="slide-number">9</span>
+</div>
+
+<!-- SLIDE 10: Hands-on Exercise -->
+<div class="slide">
+    <h2>6️⃣ 🏋️ Hands-On Exercise — Try It Yourself</h2>
+    <p style="font-size: 20px; margin-bottom: 25px;"><em>Open VS Code and try these exercises (10 minutes)</em></p>
+    
+    <h3>Exercise 1: Vague vs. Specific (3 min)</h3>
+    <p>Use the same model (GPT-5 mini) for both:</p>
+    <table>
+        <tr><th>Prompt A (vague)</th><th>Prompt B (specific)</th></tr>
+        <tr><td><em>"Help me with error handling"</em></td><td><em>"Add a try/catch to the fetchUser function that returns null on 404 and throws on other errors"</em></td></tr>
+    </table>
+    <p>→ Compare: Which response was more useful? Which was shorter?</p>
+
+    <h3>Exercise 2: Model comparison (3 min)</h3>
+    <p>Ask with <strong>GPT-5.4 nano</strong>, then <strong>Claude Sonnet 4.5</strong>:</p>
+    <div class="highlight-box"><em>"Write a function that checks if a string is a palindrome"</em></div>
+    <p>→ Is the Sonnet answer actually better for this simple task? Worth 12x the cost?</p>
+
+    <h3>Exercise 3: Constrained vs. unconstrained (3 min)</h3>
+    <table>
+        <tr><th>Prompt A</th><th>Prompt B</th></tr>
+        <tr><td><em>"Explain the Observer pattern"</em></td><td><em>"Explain the Observer pattern in 3 sentences with a 5-line code example"</em></td></tr>
+    </table>
+    <p>→ Compare output length. Both useful? One costs 60% less.</p>
+    <span class="slide-number">10</span>
+</div>
+
+<!-- SLIDE 11: Context Management -->
+<div class="slide">
+    <h2>7️⃣ Context Management — Less Input = Less Cost</h2>
+    <p style="font-size: 20px; margin-bottom: 25px;">Every open file + conversation history = input tokens sent to the model</p>
+    
+    <div class="two-col">
+        <div class="col" style="background: #dcffe4;">
+            <h4>✅ Do</h4>
+            <ul>
+                <li>Close files you're not working on</li>
+                <li>Use <code>@file</code> to reference specific files</li>
+                <li>Start a new chat when switching topics</li>
+                <li>Delete unhelpful messages (click X)</li>
+                <li>Stay in same thread for follow-ups (cached = cheap)</li>
+            </ul>
+        </div>
+        <div class="col" style="background: #ffebe9;">
+            <h4>❌ Don't</h4>
+            <ul>
+                <li>Keep 20 tabs open "just in case"</li>
+                <li>Use <code>@workspace</code> for a single-file question</li>
+                <li>Keep one mega-thread going all day</li>
+                <li>Re-paste code that's already in the thread</li>
+                <li>Include entire files when you only need one function</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="highlight-box">
+        <strong>💡 Tip #3:</strong> A focused 3-message thread costs less than a 30-message thread asking the same thing.
+    </div>
+
+    <div class="formula">
+        <code>@workspace</code> (sends all files) vs. <code>@file:src/auth/login.ts</code> (sends one file)<br><br>
+        <strong>Difference: 60-80% fewer input tokens</strong>
+    </div>
+    <span class="slide-number">11</span>
+</div>
+
+<!-- SLIDE 12: Agent Mode - What -->
+<div class="slide">
+    <h2>8️⃣ Agent Mode — Deep Dive</h2>
+    
+    <h3>What is agent mode?</h3>
+    <p style="font-size: 20px; margin-bottom: 20px;">Agent mode lets Copilot work <strong>autonomously</strong>: it reads files, runs commands, edits multiple files, and iterates until the task is done.</p>
+    
+    <h3>Why it's expensive</h3>
+    <table>
+        <tr><th></th><th>Regular Chat</th><th>Agent Mode</th></tr>
+        <tr><td>Model calls</td><td>1 per message</td><td>5-20+ per task</td></tr>
+        <tr><td>Control</td><td>You control each step</td><td>Agent decides autonomously</td></tr>
+        <tr><td>Cost predictability</td><td>Predictable</td><td>Varies widely</td></tr>
+        <tr><td>Typical cost</td><td>~1-5 credits per question</td><td>~20-200+ credits per task</td></tr>
+    </table>
+
+    <div class="warning-box">
+        <strong>Each "step" the agent takes = a new model call with full context.</strong><br>
+        A 15-step agent session on Opus can cost 100+ credits in minutes.
+    </div>
+    <span class="slide-number">12</span>
+</div>
+
+<!-- SLIDE 13: Agent Mode - When -->
+<div class="slide">
+    <h2>8️⃣ Agent Mode — When to Use / When to Avoid</h2>
+    
+    <div class="two-col">
+        <div class="col" style="background: #dcffe4;">
+            <h4>✅ When TO use agent mode</h4>
+            <ul>
+                <li>Multi-file refactoring<br><em>("rename this interface and update all 15 files")</em></li>
+                <li>Scaffolding<br><em>("create a new service with controller, repo, and tests")</em></li>
+                <li>Complex debugging<br><em>("find the race condition in this test")</em></li>
+                <li>Tasks requiring reading many files to understand context</li>
+            </ul>
+        </div>
+        <div class="col" style="background: #ffebe9;">
+            <h4>❌ When NOT to use agent mode</h4>
+            <ul>
+                <li>Simple questions<br><em>("what does this function do?")</em> → use Chat</li>
+                <li>Single-file edits<br><em>("add a null check")</em> → use Ctrl+I</li>
+                <li>Writing one function → Tab completion or Chat</li>
+                <li>Anything doable in 1-2 chat messages</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="highlight-box">
+        <strong>💡 Ask yourself:</strong> "Can I do this in 2-3 chat messages?" If yes, skip agent mode.
+    </div>
+    <span class="slide-number">13</span>
+</div>
+
+<!-- SLIDE 14: Agent Mode Best Practices -->
+<div class="slide">
+    <h2>8️⃣ Agent Mode — Best Practices to Reduce Cost</h2>
+    
+    <h4>1. Be extremely specific about scope</h4>
+    <div class="two-col">
+        <div class="col" style="background: #ffebe9;">
+            <p>❌ <em>"Improve error handling in this project"</em></p>
+            <p>→ Agent explores every file</p>
+        </div>
+        <div class="col" style="background: #dcffe4;">
+            <p>✅ <em>"Add try/catch to the 3 API functions in src/services/userService.ts"</em></p>
+            <p>→ Agent targets exactly what's needed</p>
+        </div>
+    </div>
+
+    <h4>2. Constrain the files</h4>
+    <div class="success-box">
+        ✅ <em>"Only modify files in src/auth/"</em><br>
+        ✅ <em>"Don't create new files — only edit existing ones"</em><br>
+        ✅ <em>"Don't modify tests — I'll update those separately"</em>
+    </div>
+
+    <h4>3. Provide the plan — don't let the agent plan</h4>
+    <div class="success-box">
+        ✅ <em>"Do these 3 things: 1) Add validation to createUser 2) Add rate limiter to router 3) Add logging to catch blocks"</em><br>
+        → When YOU define steps, the agent executes instead of exploring.
+    </div>
+
+    <h4>4. Use a versatile model (not Opus) for agent mode</h4>
+    <p>10 calls × Opus = 50x the cost of 10 calls × nano. Use Sonnet/GPT-5.4 for agent — good balance.</p>
+
+    <h4>5. Stop the agent if it goes off track</h4>
+    <p>Cancel and rephrase with tighter scope. Every confused step = wasted credits.</p>
+    <span class="slide-number">14</span>
+</div>
+
+<!-- SLIDE 15: Agent Mode Cost Comparison -->
+<div class="slide">
+    <h2>8️⃣ Agent Mode — Cost Comparison</h2>
+    
+    <p style="font-size: 20px; margin-bottom: 20px;"><strong>Same task:</strong> <em>"Refactor the authentication module to use JWT tokens"</em></p>
+    
+    <table>
+        <tr><th>Approach</th><th>Estimated Cost</th><th>Why</th></tr>
+        <tr><td>Agent mode + GPT-5.5, vague prompt<br><em>"refactor this project"</em></td><td style="color: #cf222e; font-weight: 700;">150-300 credits</td><td>Agent explores everything, many steps, expensive model</td></tr>
+        <tr><td>Agent mode + Sonnet, specific scope<br><em>"refactor these 3 files to use JWT"</em></td><td style="color: #d4a72c; font-weight: 700;">30-50 credits</td><td>Focused scope, fewer steps, cheaper model</td></tr>
+        <tr><td>Manual chat + nano, 5 messages<br><em>Step-by-step in regular chat</em></td><td style="color: #1a7f37; font-weight: 700;">5-10 credits</td><td>You control each step, cheapest model</td></tr>
+    </table>
+
+    <div class="big-number">30x</div>
+    <p style="text-align: center; font-size: 22px;">cost difference between worst and best approach — <strong>same end result</strong></p>
+    <span class="slide-number">15</span>
+</div>
+
+<!-- SLIDE 16: Cheat Sheet -->
+<div class="slide">
+    <h2>9️⃣ Daily Habits Cheat Sheet</h2>
+    
+    <table>
+        <tr><th>Instead of...</th><th>Do this...</th><th>Savings</th></tr>
+        <tr><td>Opening Chat for every small task</td><td>Let Tab completion do the work</td><td>100%</td></tr>
+        <tr><td>Using Opus/GPT-5.5 for everything</td><td>Start with nano/mini, upgrade if needed</td><td>80-95%</td></tr>
+        <tr><td>Vague prompts ("help me with this")</td><td>Specific prompts ("fix the null check on line 12")</td><td>50-80%</td></tr>
+        <tr><td>One huge chat thread all day</td><td>New threads per topic</td><td>30-50%</td></tr>
+        <tr><td><code>@workspace</code> for single-file questions</td><td><code>@file:path/to/file.ts</code></td><td>60-80%</td></tr>
+        <tr><td>Agent mode for simple edits</td><td>Inline edit (Ctrl+I) or Chat</td><td>50-70%</td></tr>
+        <tr><td>Regenerating bad output 3x</td><td>Add constraints ("just code, no explanation")</td><td>66%</td></tr>
+        <tr><td>Agent mode + vague scope + Opus</td><td>Agent + specific scope + Sonnet</td><td>80-90%</td></tr>
+    </table>
+    <span class="slide-number">16</span>
+</div>
+
+<!-- SLIDE 17: When to Use What -->
+<div class="slide">
+    <h2>9️⃣ When to Use What Tool</h2>
+    
+    <table>
+        <tr><th>I want to...</th><th>Use this</th><th>Cost</th></tr>
+        <tr><td>Complete a line of code</td><td>Just keep typing (Tab)</td><td><span class="badge-free">FREE</span></td></tr>
+        <tr><td>Generate a function body</td><td>Inline suggestion / comment</td><td><span class="badge-free">FREE</span></td></tr>
+        <tr><td>Understand what code does</td><td>Chat + lightweight model</td><td>🟢 Low</td></tr>
+        <tr><td>Write a unit test</td><td>Chat + versatile model</td><td>🟡 Medium</td></tr>
+        <tr><td>Fix a specific bug</td><td>Chat — paste error + ask for fix</td><td>🟡 Medium</td></tr>
+        <tr><td>Refactor one file</td><td>Inline edit (Ctrl+I)</td><td>🟡 Medium</td></tr>
+        <tr><td>Refactor across multiple files</td><td>Agent mode + versatile model</td><td>🔴 High</td></tr>
+        <tr><td>Scaffold a new service</td><td>Agent mode + versatile model</td><td>🔴 High</td></tr>
+        <tr><td>Solve hard architecture problem</td><td>Chat + powerful model (single turn)</td><td>🟠 Med-High</td></tr>
+    </table>
+    <span class="slide-number">17</span>
+</div>
+
+<!-- SLIDE 18: Q&A -->
+<div class="slide">
+    <h2>🔟 Common Questions</h2>
+    
+    <h4>Q: Will I get blocked if I use too much?</h4>
+    <p>Your admin has set a monthly budget per user. If you hit it, Chat/Agent stop until next month. <strong>Code completions still work — always free.</strong></p>
+
+    <h4>Q: Can I see how much I've used?</h4>
+    <p>The Copilot status panel shows "Credits: Included with your organization's plan." Per-interaction cost isn't shown live — but you will be notified as you approach your budget limit.</p>
+
+    <h4>Q: Does it cost more in one language vs. another?</h4>
+    <p>Not directly — cost is token-based. Verbose languages (Java) produce slightly more tokens than concise ones (Python). Small difference in practice.</p>
+
+    <h4>Q: Do code completions ever cost credits?</h4>
+    <p><strong>No. Never. Always free and unlimited.</strong></p>
+
+    <h4>Q: Should I avoid agent mode entirely?</h4>
+    <p>No — it's incredibly productive for the right tasks. Use it intentionally, with specific scope, on a versatile model.</p>
+
+    <h4>Q: What happens when my budget is exhausted?</h4>
+    <p>Chat and Agent stop working. Code completions and inline suggestions continue. Resets at the next billing cycle.</p>
+    <span class="slide-number">18</span>
+</div>
+
+<!-- SLIDE 19: Takeaways -->
+<div class="slide">
+    <h2>🎯 Top 5 Takeaways</h2>
+    
+    <div style="font-size: 24px; line-height: 2.5;">
+        <p><strong>1.</strong> &nbsp;🆓 &nbsp;<strong>Tab completion is free</strong> — use it as your primary tool</p>
+        <p><strong>2.</strong> &nbsp;🟢 &nbsp;<strong>Pick lightweight models first</strong> — nano/mini handle 80% of tasks</p>
+        <p><strong>3.</strong> &nbsp;🎯 &nbsp;<strong>Be specific</strong> — shorter prompts + constrained output = less cost</p>
+        <p><strong>4.</strong> &nbsp;📁 &nbsp;<strong>Manage your context</strong> — close files, fresh threads, <code>@file</code> not <code>@workspace</code></p>
+        <p><strong>5.</strong> &nbsp;🤖 &nbsp;<strong>Agent mode is a power tool</strong> — use intentionally, with tight scope, versatile model</p>
+    </div>
+
+    <div style="margin-top: 40px; text-align: center; padding: 30px; background: linear-gradient(135deg, #0d1117, #161b22); border-radius: 12px; color: #fff;">
+        <p style="font-size: 28px; color: #58a6ff; margin-bottom: 10px;"><strong>Small habit changes = 50-80% cost reduction</strong></p>
+        <p style="font-size: 18px; color: #8b949e;">Same productivity. Same code quality. Fewer credits burned.</p>
+    </div>
+    <span class="slide-number">19</span>
+</div>
+
+<!-- SLIDE 20: Resources -->
+<div class="slide">
+    <h2>📚 Resources & Links</h2>
+    
+    <table>
+        <tr><th>Topic</th><th>Link</th></tr>
+        <tr><td>Models and pricing (per-token rates)</td><td>docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing</td></tr>
+        <tr><td>Usage-based billing explained</td><td>docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-organizations-and-enterprises</td></tr>
+        <tr><td>Best practices for using Copilot</td><td>docs.github.com/en/copilot/using-github-copilot/best-practices-for-using-github-copilot</td></tr>
+        <tr><td>Budget controls</td><td>docs.github.com/en/copilot/concepts/billing/budgets-for-usage-based-billing</td></tr>
+        <tr><td>AI usage dashboard</td><td>docs.github.com/en/billing/how-tos/products/view-productlicense-use#analyzing-ai-credits-usage</td></tr>
+    </table>
+
+    <div style="margin-top: 50px; text-align: center;">
+        <p style="font-size: 24px; color: #8b949e;">Thank you! Questions?</p>
+        <p style="font-size: 18px; color: #8b949e; margin-top: 15px;">Session prepared by GitHub — June 2026</p>
+    </div>
+    <span class="slide-number">20</span>
+</div>
+
+</body>
+</html>
